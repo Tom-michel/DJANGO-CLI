@@ -2,13 +2,14 @@ import os
 import subprocess
 import sys
 import json
+import click
 
 
 class ProjectCreator:
     def __init__(self, project_name, api, security, app_list, custom_user, custom_user_app):
         self.project_name = project_name
         self.api = api
-        self.security = security
+        self.security = security if api else None  # Only set security if API is used
         self.app_list = app_list
         self.custom_user = custom_user
         self.custom_user_app = custom_user_app
@@ -28,8 +29,10 @@ class ProjectCreator:
         # Create the Django project
         os.makedirs(self.project_name, exist_ok=True)
         os.chdir(self.project_name)
+
+        # Create the Django project in the correct location
         subprocess.run([sys.executable, '-m', 'django',
-                       'startproject', self.project_name])
+                       'startproject', self.project_name, '.'])
 
         # Create apps
         for app_name in self.app_list:
@@ -44,6 +47,9 @@ class ProjectCreator:
 
         if self.custom_user:
             self.create_custom_user()
+
+        # Display next steps
+        self.display_next_steps()
 
     def create_config_file(self):
         """Create the dj-config.json file with user choices."""
@@ -78,3 +84,13 @@ class ProjectCreator:
         """Logic to create a custom user model."""
         # Implement custom user creation logic based on self.custom_user_app
         pass
+
+    def display_next_steps(self):
+        """Display instructions for the next steps after project creation."""
+        click.echo(click.style(
+            f'🎊 Project {self.project_name} created successfully!\n', fg='green'))
+        click.echo(f"\nNext steps to run your Django project:")
+        click.echo(
+            f"> cd {self.project_name}/")
+        click.echo(
+            "> python manage.py runserver\n")
